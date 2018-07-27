@@ -12,7 +12,8 @@ class Node(AL_Node):
     parent = models.ForeignKey('self', related_name='children',
                                null=True, db_index=True)
 
-    node_order_by = ['title']
+    sib_order = models.PositiveIntegerField(default=1)
+    test_field = models.CharField(max_length=255, null=True)
 
     def __unicode__(self):
         return 'Node: %s' % self.title
