@@ -117,7 +117,7 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'tree',
+        'NAME': 'tree_mp',
         'USER': 'tree',
         'PASSWORD': 'treepasswd',
         'HOST': 'localhost',

@@ -3,16 +3,14 @@ from __future__ import unicode_literals
 
 from django.core import serializers
 from django.db import models
-from treebeard.al_tree import AL_Node
+from treebeard.mp_tree import MP_Node, get_result_class
 
 
-class Node(AL_Node):
+class Node(MP_Node):
     title = models.CharField(max_length=255)
     subtitle = models.CharField(max_length=255, null=True)
-    parent = models.ForeignKey('self', related_name='children',
-                               null=True, db_index=True)
 
-    node_order_by = ['title']
+    node_order_by = ['path']
 
     def __unicode__(self):
         return 'Node: %s' % self.title
@@ -21,28 +19,26 @@ class Node(AL_Node):
     def dump_bulk2(cls, parent=None, keep_ids=True):
         """Dumps a tree branch to a python data structure."""
 
-        serializable_cls = cls._get_serializable_model()
-        if (
-                parent and serializable_cls != cls and
-                parent.__class__ != serializable_cls
-        ):
-            parent = serializable_cls.objects.get(pk=parent.pk)
+        cls = get_result_class(cls)
 
-        # a list of nodes: not really a queryset, but it works
-        objs = serializable_cls.get_tree(parent)
-
+        # Because of fix_tree, this method assumes that the depth
+        # and numchild properties in the nodes can be incorrect,
+        # so no helper methods are used
+        qset = cls._get_serializable_model().objects.all()
+        if parent:
+            qset = qset.filter(path__startswith=parent.path)
         ret, lnk = [], {}
-        for node, pyobj in zip(objs, serializers.serialize('python', objs)):
-            depth = node.get_depth()
+        for pyobj in serializers.serialize('python', qset):
             # django's serializer stores the attributes in 'fields'
             fields = pyobj['fields']
-            del fields['parent']
-
-            # non-sorted trees have this
-            if 'sib_order' in fields:
-                del fields['sib_order']
-
+            path = fields['path']
+            depth = int(len(path) / cls.steplen)
+            # this will be useless in load_bulk
+            del fields['depth']
+            del fields['path']
+            del fields['numchild']
             if 'id' in fields:
+                # this happens immediately after a load_bulk
                 del fields['id']
 
             newobj = fields
@@ -50,12 +46,13 @@ class Node(AL_Node):
                 newobj['id'] = pyobj['pk']
 
             if (not parent and depth == 1) or\
-               (parent and depth == parent.get_depth()):
+               (parent and len(path) == len(parent.path)):
                 ret.append(newobj)
             else:
-                parentobj = lnk[node.parent_id]
+                parentpath = cls._get_basepath(path, depth - 1)
+                parentobj = lnk[parentpath]
                 if 'children' not in parentobj:
                     parentobj['children'] = []
                 parentobj['children'].append(newobj)
-            lnk[node.pk] = newobj
+            lnk[path] = newobj
         return ret

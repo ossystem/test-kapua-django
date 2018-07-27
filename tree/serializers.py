@@ -6,4 +6,5 @@ from .models import Node
 class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
-        fields = ('title', 'subtitle', 'parent')
+        #fields = '__all__'
+        fields = ('title', 'subtitle', 'depth', 'path')
