@@ -26,7 +26,8 @@ SECRET_KEY = 'jsnge!u^0i4uos2dg53kvfdp!les*xh!q9b5adsb^*9(36^-9h'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '.kapua'
+    '.kapua',
+    os.environ['ALLOWED_HOST'],
 ]
 
 
@@ -117,11 +118,11 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'tree',
-        'USER': 'tree',
-        'PASSWORD': 'treepasswd',
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': os.environ['DB_PORT'],
     }
 }
 
@@ -172,5 +173,3 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 SITE_ID = 1
-
-CORS_ORIGIN_ALLOW_ALL = True

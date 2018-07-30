@@ -10,7 +10,7 @@ from .serializers import NodeSerializer
 
 
 class NodeViewSet(viewsets.ModelViewSet):
-    queryset = Node.objects.all().filter(parent=None)
+    queryset = Node.objects.all()
     serializer_class = NodeSerializer
 
     def list(self, request):
