@@ -1,5 +1,5 @@
 configparser==3.5.0
-Django==1.11.14
+Django==1.11.18
 django-cors-headers==2.4.0
 django-tenant-schemas==1.9.0
 django-tenants==2.0.0
